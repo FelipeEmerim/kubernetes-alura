@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-noticias-deployment
+  annotations:
+    kubernetes.io/change-cause: Initial deploy
+spec:
+  selector:
+    matchLabels:
+      app: db-noticias
+  replicas: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      name: db-noticias-pod
+      labels:
+        app: db-noticias
+    spec:
+      volumes:
+        - name: db-noticias-pv
+          persistentVolumeClaim:
+            claimName: db-noticias-pv-claim
+      containers:
+      - name: db-noticias-container
+        image: docker.io/aluracursos/mysql-db:1
+        volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: db-noticias-pv
+        # env:
+        #   - name: MYSQL_ROOT_PASSWORD
+        #     valueFrom:
+        #       configMapKeyRef:
+        #         key: MYSQL_ROOT_PASSWORD
+        #         name: db-noticias-cm
+        envFrom:
+          - configMapRef:
+              name: db-noticias-cm
+        resources:
+          limits:
+              memory: 512Mi
+              cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.2"
+        ports:
+          - containerPort: 3306
+
