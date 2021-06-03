@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sistema-noticias-pod
+  labels:
+    app: sistema-noticias
+spec:
+  containers:
+    - name: sistema-noticias-container
+      image: docker.io/aluracursos/sistema-noticias:1
+      envFrom:
+        - configMapRef:
+            name: sistema-noticias-cm
+      resources:
+        limits:
+          memory: 512Mi
+          cpu: "1"
+        requests:
+          memory: 256Mi
+          cpu: "0.2"
+      ports:
+        - containerPort: 80

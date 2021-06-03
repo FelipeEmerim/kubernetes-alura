@@ -1,18 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: svc-pod-2-ingress
+  name: svc-pod-1-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: $2
 spec:
   rules:
   - host: api-gateway.localdev
     http:
       paths:
-      - path: /pod-2
+      - path: /pod-1(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            name: svc-pod-2
+            name: svc-pod-1
             port:
               number: 80
