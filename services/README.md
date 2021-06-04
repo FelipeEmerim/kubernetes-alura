@@ -9,6 +9,11 @@ Services são formas de acessar Pods no kubernetes. Eles possuem 3 principais us
 
 Serviços do tipo ClusterIp definem um ip fixo para acessar pods. Dessa forma é possível acessar um pod de maneira previsível através do DNS da rede interna do kubernetes nas portas determinadas.
 
+Exemplo: acessar o serviço svc-myapp no namespace applications
+
+* De dentro do mesmo namespace basta utilizar a url `svc-myapp`
+* De outro namespace podemos utilizar as urls `svc-myapp.applications` ou `svc-myapp.applications.svc` ou ainda `svc-myapp.applications.svc.cluster.local`. Também é possível utilizar essas formas de dentro do próprio namespace application, apenas não há necessidade.
+
 ## NodePort
 
 Aloca uma porta em todos os nodes de um cluster para acessar Pods. Também realiza tudo o que o ClusterIp realiza.
