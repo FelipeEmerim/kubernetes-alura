@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "app-noticias.name" -}}
+{{- define "portal-noticias.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "app-noticias.fullname" -}}
+{{- define "portal-noticias.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "app-noticias.chart" -}}
+{{- define "portal-noticias.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "app-noticias.labels" -}}
-helm.sh/chart: {{ include "app-noticias.chart" . }}
-{{ include "app-noticias.selectorLabels" . }}
+{{- define "portal-noticias.labels" -}}
+helm.sh/chart: {{ include "portal-noticias.chart" . }}
+{{ include "portal-noticias.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "app-noticias.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "app-noticias.name" . }}
+{{- define "portal-noticias.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "portal-noticias.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "app-noticias.serviceAccountName" -}}
+{{- define "portal-noticias.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "app-noticias.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "portal-noticias.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

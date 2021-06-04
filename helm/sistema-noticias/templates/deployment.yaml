@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "app-noticias.fullname" . }}
+  name: {{ include "sistema-noticias.fullname" . }}
   labels:
-    {{- include "app-noticias.labels" . | nindent 4 }}
+    {{- include "sistema-noticias.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "app-noticias.selectorLabels" . | nindent 6 }}
+      {{- include "sistema-noticias.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "app-noticias.selectorLabels" . | nindent 8 }}
+        {{- include "sistema-noticias.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "app-noticias.serviceAccountName" . }}
+      serviceAccountName: {{ include "sistema-noticias.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
