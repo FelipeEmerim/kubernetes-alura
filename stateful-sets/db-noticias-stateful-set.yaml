@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: db-noticias-stateful-set
   annotations:
-    kubernetes.io/change-cause: Initial deploy
+    kubernetes.io/change-cause: Update probe
 spec:
   serviceName: svc-db-noticias
   selector:
@@ -55,4 +55,20 @@ spec:
             cpu: "0.2"
         ports:
           - containerPort: 3306
+        livenessProbe:
+          exec:
+            command: ["mysqladmin", "ping"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            # Check we can execute queries over TCP (skip-networking is off).
+            command:
+            - /bin/sh
+            - -ec
+            - >-
+              mysql -h127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD -e'SELECT 1'
+          initialDelaySeconds: 5
+          periodSeconds: 2
 
