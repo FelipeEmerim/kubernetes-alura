@@ -1,31 +1,42 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: db-noticias-deployment
+  name: db-noticias-stateful-set
   annotations:
     kubernetes.io/change-cause: Initial deploy
 spec:
+  serviceName: svc-db-noticias
   selector:
     matchLabels:
       app: db-noticias
   replicas: 1
-  minReadySeconds: 5
+
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: db-noticias-stateful-pv-claim
+      spec:
+        resources:
+          requests:
+            storage: 3Gi
+        storageClassName: minikube-class
+        accessModes:
+          - ReadWriteOnce
+
   template:
     metadata:
       name: db-noticias-pod
       labels:
         app: db-noticias
     spec:
-      volumes: # Not really good for db, since the volume is shared across instances. See StatefulSets
-        - name: db-noticias-pv
-          persistentVolumeClaim:
-            claimName: db-noticias-pv-claim
+      terminationGracePeriodSeconds: 20
       containers:
       - name: db-noticias-container
         image: docker.io/aluracursos/mysql-db:1
         volumeMounts:
           - mountPath: /var/lib/mysql
-            name: db-noticias-pv
+            name: db-noticias-stateful-pv-claim
         # env:
         #   - name: MYSQL_ROOT_PASSWORD
         #     valueFrom:

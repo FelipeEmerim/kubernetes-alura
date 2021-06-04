@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: sistema-noticias-deployment
   annotations:
-    kubernetes.io/change-cause: Initial deploy
+    kubernetes.io/change-cause: Add volumes
 spec:
   replicas: 2
   minReadySeconds: 5
@@ -16,6 +16,13 @@ spec:
       labels:
         app: sistema-noticias
     spec:
+      volumes:
+        - name: sistema-noticias-imagens-pv
+          persistentVolumeClaim:
+            claimName: imagens-pv-claim
+        - name: sistema-noticias-sessao-pv
+          persistentVolumeClaim:
+            claimName: sessao-pv-claim
       containers:
         - name: sistema-noticias-container
           image: docker.io/aluracursos/sistema-noticias:1
@@ -31,3 +38,8 @@ spec:
               cpu: "0.2"
           ports:
             - containerPort: 80
+          volumeMounts:
+            - mountPath: /var/www/html/uploads
+              name: sistema-noticias-imagens-pv
+            - mountPath: /tmp
+              name: sistema-noticias-sessao-pv
