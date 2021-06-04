@@ -1,7 +1,7 @@
 # Volumes no kubernetes
 
 Volumes no kubernetes funcionam de forma bem similar ao Docker. Eles armazenam dados de forma bidirecional.
-
+Há configurações específicas de cada cloud provider. A documentação completa pode ser vista [aqui](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 ## Volumes normais
 
 Volumes "normais" são vinculados ao ciclo de vida de um pod e existem enquanto o pod existir. Caso o pod seja apagado, o volume também é. o Pod `volume-pod.yaml` utiliza um volume normal. Utilizar o mesmo volume significa que ao publicar uma alteração, todos os outros consumidores daquele volume verão sua alteração e vice-versa
