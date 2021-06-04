@@ -1,0 +1,3 @@
+# Replica sets
+
+Defini 'sets' de um determinado pod. Sem réplica sets, você cria um pod para sua aplicação, se em algum momento ele apresentar uma falha e cair. Sua aplicação irá ficar fora do ar até você entrar no cluster e recriar o pod. O réplica set resolve esse problema. Com ele é possível criar réplicas de um determinado pod. Por exemplo, manter 2 réplicas da aplicação mencionada anteriormente assim, caso ocorra algum problema é um pod morra, sua aplicação fica no ar, pois ainda há uma replica rodando. O réplica set também vai criar uma nova réplica, imediatamente, para compensar a morte da réplica anterior, e sempre manter o número desejado de réplicas no ar, eliminando a necessidade de intervenção manual
