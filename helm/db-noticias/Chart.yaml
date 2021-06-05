@@ -1,6 +1,6 @@
 apiVersion: v2
 name: db-noticias
-description: A Helm chart for Kubernetes
+description: Banco de dados do sistema de notícias
 
 # A chart can be either an 'application' or a 'library' chart.
 #

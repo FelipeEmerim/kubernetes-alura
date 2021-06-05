@@ -1,0 +1,23 @@
+apiVersion: batch/v1beta1 # batch/v1 for kubernetes v1.21
+kind: CronJob
+metadata:
+  name: example-cronjob
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Allow
+  startingDeadlineSeconds: 10
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 180
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure

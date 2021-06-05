@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sistema-noticias-deployment
+  annotations:
+    kubernetes.io/change-cause: Add probes
+spec:
+  replicas: 2
+  minReadySeconds: 5
+  selector:
+    matchLabels:
+      app: sistema-noticias
+  template:
+    metadata:
+      name: sistema-noticias-pod
+      labels:
+        app: sistema-noticias
+    spec:
+      volumes:
+        - name: sistema-noticias-imagens-pv
+          persistentVolumeClaim:
+            claimName: imagens-pv-claim
+        - name: sistema-noticias-sessao-pv
+          persistentVolumeClaim:
+            claimName: sessao-pv-claim
+      containers:
+        - name: sistema-noticias-container
+          image: docker.io/aluracursos/sistema-noticias:1
+          envFrom:
+            - configMapRef:
+                name: sistema-noticias-cm
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /var/www/html/uploads
+              name: sistema-noticias-imagens-pv
+            - mountPath: /tmp
+              name: sistema-noticias-sessao-pv
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            successThreshold: 1
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 15
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            successThreshold: 2
+            periodSeconds: 10

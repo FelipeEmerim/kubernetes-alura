@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-noticias-stateful-set
+  annotations:
+    kubernetes.io/change-cause: Update probe
+spec:
+  serviceName: svc-db-noticias
+  selector:
+    matchLabels:
+      app: db-noticias
+  replicas: 1
+
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: db-noticias-stateful-pv-claim
+      spec:
+        resources:
+          requests:
+            storage: 3Gi
+        storageClassName: minikube-class
+        accessModes:
+          - ReadWriteOnce
+
+  template:
+    metadata:
+      name: db-noticias-pod
+      labels:
+        app: db-noticias
+    spec:
+      terminationGracePeriodSeconds: 20
+      containers:
+      - name: db-noticias-container
+        image: docker.io/aluracursos/mysql-db:1
+        volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: db-noticias-stateful-pv-claim
+        # env:
+        #   - name: MYSQL_ROOT_PASSWORD
+        #     valueFrom:
+        #       configMapKeyRef:
+        #         key: MYSQL_ROOT_PASSWORD
+        #         name: db-noticias-cm
+        envFrom:
+          - configMapRef:
+              name: db-noticias-cm
+        resources:
+          limits:
+              memory: 512Mi
+              cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.2"
+        ports:
+          - containerPort: 3306
+        livenessProbe:
+          exec:
+            command: ["mysqladmin", "ping"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            # Check we can execute queries over TCP (skip-networking is off).
+            command:
+            - /bin/sh
+            - -ec
+            - >-
+              mysql -h127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD -e'SELECT 1'
+          initialDelaySeconds: 5
+          periodSeconds: 2
+
