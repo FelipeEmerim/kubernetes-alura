@@ -1,56 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: portal-noticias-deployment
+  name: {{ include "portal-noticias.fullname" . }}
+  labels:
+    {{- include "portal-noticias.labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/change-cause: add probes
+    kubernetes.io/change-cause: {{ .Chart.Version }}
 spec:
   template:
     metadata:
-      name: portal-noticias
+      name: {{ include "portal-noticias.fullname" . }}
       labels:
-        app: portal-noticias
+        {{- include "portal-noticias.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: portal-noticias-container
-          image: docker.io/aluracursos/portal-noticias:1
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           ports:
             - containerPort: 80
           envFrom:
             - configMapRef:
-                name: portal-noticias-cm
+                name: {{ include "portal-noticias.fullname" .  }}-cm
           resources:
-            limits:
-              memory: 512Mi
-              cpu: "0.5"
-            requests:
-              memory: 256Mi
-              cpu: "0.2"
+            {{- .Values.deployment.resources | toYaml | nindent 12 }}
           livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 3
-            initialDelaySeconds: 15
-            successThreshold: 1
-            periodSeconds: 10
+            {{- .Values.deployment.livenessProbe | toYaml | nindent 12 }}
           startupProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 15
-            initialDelaySeconds: 15
-            periodSeconds: 15
+            {{- .Values.deployment.startupProbe | toYaml | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 3
-            initialDelaySeconds: 5
-            successThreshold: 2
-            periodSeconds: 10
-  replicas: 3
-  minReadySeconds: 5
+            {{- .Values.deployment.readinessProbe | toYaml | nindent 12 }}
+  replicas: {{ .Values.replicaCount }}
+  minReadySeconds: {{ .Values.deployment.minReadySeconds }}
   selector:
     matchLabels:
-      app: portal-noticias
+      {{- include "portal-noticias.selectorLabels" . | nindent 8 }}
