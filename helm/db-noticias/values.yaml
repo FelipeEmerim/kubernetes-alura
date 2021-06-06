@@ -1,14 +1,41 @@
-# Default values for db-noticias.
+# Default values for sistema-noticias.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
+statefulSet:
+  terminationGracePeriodSeconds: 20
+  replicaCount: 1
+  minReadySeconds: 5
+  resources:
+    limits:
+        memory: 512Mi
+        cpu: "1"
+    requests:
+      memory: 256Mi
+      cpu: "0.2"
+  ports:
+    - containerPort: 3306
+  livenessProbe:
+    exec:
+      command: ["mysqladmin", "ping"]
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    exec:
+      # Check we can execute queries over TCP (skip-networking is off).
+      command:
+      - /bin/sh
+      - -ec
+      - >-
+        mysql -h127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD -e'SELECT 1'
+    initialDelaySeconds: 5
+    periodSeconds: 2
 image:
-  repository: nginx
+  repository: docker.io/aluracursos/mysql-db
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "1"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -23,60 +50,68 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 service:
   type: ClusterIP
-  port: 80
+  port: 3306
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# Create a separate values file called .env.yaml and define these vars
+# The .env.yaml file is ignore by version control
+env:
+  MYSQL_ROOT_PASSWORD: null
+  MYSQL_DATABASE: null
+  MYSQL_PASSWORD: null
+
+volumes:
+  class:
+    provisioner: k8s.io/minikube-hostpath
+    reclaimPolicy: Delete
+    volumeBindingMode: Immediate
+    allowVolumeExpansion: true
+  db:
+    nameSuffix: pv
+    claimSuffix: pv-claim
+    mountPath: /var/lib/mysql
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 4Gi
 
 autoscaling:
-  enabled: false
   minReplicas: 1
   maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 50
+  behavior:
+    scaleDown:
+      policies:
+        - periodSeconds: 60
+          type: Pods
+          value: 4
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 15
+      selectPolicy: Max
 
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}

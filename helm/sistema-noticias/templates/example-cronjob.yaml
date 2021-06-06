@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1 # batch/v1 for kubernetes v1.21
 kind: CronJob
 metadata:
-  name: {{ include "sistema-noticias.fullname" . }}
+  name: {{ include "sistema-noticias.fullname" . }}-cronjob
 spec:
   schedule: "*/1 * * * *"
   concurrencyPolicy: Allow

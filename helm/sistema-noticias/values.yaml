@@ -4,11 +4,11 @@
 
 deployment:
   replicaCount: 2
-  minReadySeconds: 5
+  minReadySeconds: 15
   resources:
     limits:
       memory: 512Mi
-      cpu: "1"
+      cpu: "0.5"
     requests:
       memory: 256Mi
       cpu: "0.2"
@@ -65,10 +65,10 @@ service:
 # Create a separate values file called .env.yaml and define these vars
 # The .env.yaml file is ignore by version control
 env:
-  HOST_DB: null
+  HOST_DB: 'db-noticias:3306'
   USER_DB: null
   PASS_DB: null
-  DATABASE_DB: null
+  DATABASE_DB: empresa
 
 volumes:
   class:
@@ -96,8 +96,8 @@ volumes:
         storage: 4Gi
 
 autoscaling:
-  minReplicas: 1
-  maxReplicas: 100
+  minReplicas: 2
+  maxReplicas: 20
   metrics:
     - type: Resource
       resource:

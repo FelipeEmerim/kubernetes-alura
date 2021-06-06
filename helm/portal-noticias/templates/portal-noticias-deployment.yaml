@@ -29,7 +29,7 @@ spec:
             {{- .Values.deployment.startupProbe | toYaml | nindent 12 }}
           readinessProbe:
             {{- .Values.deployment.readinessProbe | toYaml | nindent 12 }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.deployment.replicaCount }}
   minReadySeconds: {{ .Values.deployment.minReadySeconds }}
   selector:
     matchLabels:

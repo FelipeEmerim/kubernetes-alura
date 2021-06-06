@@ -1,74 +1,54 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: db-noticias-stateful-set
+  name: {{ include "db-noticias.fullname" . }}
+  labels:
+    {{- include "db-noticias.labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/change-cause: Update probe
+    kubernetes.io/change-cause: {{ .Chart.Version }}
 spec:
-  serviceName: svc-db-noticias
+  serviceName: {{ include "db-noticias.fullname" . }}
   selector:
     matchLabels:
-      app: db-noticias
-  replicas: 1
+      {{- include "db-noticias.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.statefulSet.replicaCount }}
 
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:
-        name: db-noticias-stateful-pv-claim
+        name: "{{ include "db-noticias.fullname" . }}-{{ .Values.volumes.db.claimSuffix }}"
+        labels:
+          {{- include "db-noticias.labels" . | nindent 10 }}
       spec:
-        resources:
-          requests:
-            storage: 3Gi
-        storageClassName: minikube-class
+        storageClassName: {{ include "db-noticias.fullname" . }}-st-class
         accessModes:
-          - ReadWriteOnce
+          {{- .Values.volumes.db.accessModes | toYaml | nindent 10 }}
+        resources:
+          {{- .Values.volumes.db.resources | toYaml | nindent 10 }}
 
   template:
     metadata:
-      name: db-noticias-pod
+      name: {{ include "db-noticias.fullname" . }}
       labels:
-        app: db-noticias
+        {{- include "db-noticias.labels" . | nindent 8 }}
     spec:
-      terminationGracePeriodSeconds: 20
+      terminationGracePeriodSeconds: {{ .Values.statefulSet.terminationGracePeriodSeconds }}
       containers:
-      - name: db-noticias-container
-        image: docker.io/aluracursos/mysql-db:1
-        volumeMounts:
-          - mountPath: /var/lib/mysql
-            name: db-noticias-stateful-pv-claim
-        # env:
-        #   - name: MYSQL_ROOT_PASSWORD
-        #     valueFrom:
-        #       configMapKeyRef:
-        #         key: MYSQL_ROOT_PASSWORD
-        #         name: db-noticias-cm
-        envFrom:
-          - configMapRef:
-              name: db-noticias-cm
-        resources:
-          limits:
-              memory: 512Mi
-              cpu: "1"
-          requests:
-            memory: 256Mi
-            cpu: "0.2"
-        ports:
-          - containerPort: 3306
-        livenessProbe:
-          exec:
-            command: ["mysqladmin", "ping"]
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          exec:
-            # Check we can execute queries over TCP (skip-networking is off).
-            command:
-            - /bin/sh
-            - -ec
-            - >-
-              mysql -h127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD -e'SELECT 1'
-          initialDelaySeconds: 5
-          periodSeconds: 2
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          volumeMounts:
+            - mountPath: {{ .Values.volumes.db.mountPath }}
+              name: "{{ include "db-noticias.fullname" . }}-{{ .Values.volumes.db.claimSuffix }}"
+          envFrom:
+            - secretRef:
+                name: {{ include "db-noticias.fullname" . }}-secret
+          resources:
+            {{- .Values.statefulSet.resources | toYaml | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          livenessProbe:
+            {{- .Values.statefulSet.livenessProbe | toYaml | nindent 12 }}
+          readinessProbe:
+            {{- .Values.statefulSet.readinessProbe | toYaml | nindent 12 }}
 
