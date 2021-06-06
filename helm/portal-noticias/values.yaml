@@ -26,7 +26,7 @@ env:
   IP_SISTEMA: http://api-gateway.localdev:30001
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 80
   targetPort: 80
   nodePort: 30000

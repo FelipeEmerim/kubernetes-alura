@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sessao-pv-claim
+  name: "{{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.session.claimSuffix }}"
+  labels:
+    {{- include "sistema-noticias.labels" . | nindent 4 }}
 spec:
-  storageClassName: minikube-class
+  storageClassName: {{ include "sistema-noticias.fullname" . }}-st-class
   accessModes:
-    - ReadWriteOnce
+    {{- .Values.volumes.session.accessModes | toYaml | nindent 4 }}
   resources:
-    requests:
-      storage: 4Gi
+    {{- .Values.volumes.session.resources | toYaml | nindent 4 }}

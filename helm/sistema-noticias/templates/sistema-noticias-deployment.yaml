@@ -1,68 +1,48 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sistema-noticias-deployment
+  name: {{ include "sistema-noticias.fullname" . }}
+  labels:
+    {{- include "sistema-noticias.labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/change-cause: Add probes
+    kubernetes.io/change-cause: {{ .Chart.Version }}
 spec:
-  replicas: 2
-  minReadySeconds: 5
+  replicas: {{ .Values.deployment.replicaCount }}
+  minReadySeconds: {{ .Values.deployment.minReadySeconds }}
   selector:
     matchLabels:
-      app: sistema-noticias
+      {{- include "sistema-noticias.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      name: sistema-noticias-pod
+      name: {{ include "sistema-noticias.fullname" . }}
       labels:
-        app: sistema-noticias
+        {{- include "sistema-noticias.labels" . | nindent 8 }}
     spec:
       volumes:
-        - name: sistema-noticias-imagens-pv
+        - name: "{{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.images.nameSuffix }}"
           persistentVolumeClaim:
-            claimName: imagens-pv-claim
-        - name: sistema-noticias-sessao-pv
+            claimName: {{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.images.claimSuffix }}
+        - name: "{{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.session.nameSuffix }}"
           persistentVolumeClaim:
-            claimName: sessao-pv-claim
+            claimName: {{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.session.claimSuffix }}
       containers:
-        - name: sistema-noticias-container
-          image: docker.io/aluracursos/sistema-noticias:1
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           envFrom:
-            - configMapRef:
-                name: sistema-noticias-cm
+            - secretRef:
+                name: {{ include "sistema-noticias.fullname" . }}-secret
           resources:
-            limits:
-              memory: 512Mi
-              cpu: "1"
-            requests:
-              memory: 256Mi
-              cpu: "0.2"
+            {{- .Values.deployment.resources | toYaml | nindent 12 }}
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.service.targetPort }}
           volumeMounts:
-            - mountPath: /var/www/html/uploads
-              name: sistema-noticias-imagens-pv
-            - mountPath: /tmp
-              name: sistema-noticias-sessao-pv
+            - mountPath: {{ .Values.volumes.images.mountPath }}
+              name: "{{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.images.nameSuffix }}"
+            - mountPath: {{ .Values.volumes.session.mountPath }}
+              name: "{{ include "sistema-noticias.fullname" . }}-{{ .Values.volumes.session.nameSuffix }}"
           livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 3
-            initialDelaySeconds: 15
-            successThreshold: 1
-            periodSeconds: 10
+            {{- .Values.deployment.livenessProbe | toYaml | nindent 12 }}
           startupProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 15
-            initialDelaySeconds: 15
-            periodSeconds: 15
+            {{- .Values.deployment.startupProbe | toYaml | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: 80
-            failureThreshold: 3
-            initialDelaySeconds: 5
-            successThreshold: 2
-            periodSeconds: 10
+            {{- .Values.deployment.readinessProbe | toYaml | nindent 12 }}
