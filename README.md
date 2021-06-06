@@ -33,32 +33,37 @@ A aplicação é composta por 3 componentes.
 * Um deployment para o sistema de notícias, com dois volumes: 1 para imagens e outro para sessão
 * Um statefulset para o banco de dados com um volume e uma única réplica
 
-```bash
-kubectl apply -f volumes/minikube-st-class.yaml # Criar a classe de volumes primeiro
-```
+## Instalando o portal de notícias
 
 ```bash
-kubectl apply -f volumes
+helm install portal-noticias helm/portal-noticias
 ```
 
-```bash
-kubectl apply -f config-maps
-```
+## Instalando o sistema de notícias
+
+Crie um arquivo dentro de helm/sistema-noticias chamado `.env.yaml`, copie a chave `env:` de values.yaml e preencha os valores em branco.
+Após isso, basta rodar o comando abaixo:
+*O arquivo .env.yaml é apenas um arquivo para sobrescrever valores padrão do helm.*
 
 ```bash
-kubectl apply -f services/svc-portal-noticias.yaml
-kubectl apply -f services/svc-sistema-noticias.yaml
-kubectl apply -f services/svc-db-noticias.yaml
+helm install sistema-noticias -f helm/sistema-noticias/.env.yaml helm/sistema-noticias/
 ```
 
-```bash
-kubectl apply -f deployments/portal-noticias-deployment.yaml
-```
+## Instalando o banco de dados de notícias
+
+Crie um arquivo dentro de helm/db-noticias chamado `.env.yaml`, copie a chave `env:` de values.yaml e preencha os valores em branco.
+Após isso, basta rodar o comando abaixo:
+*O arquivo .env.yaml é apenas um arquivo para sobrescrever valores padrão do helm.*
 
 ```bash
-kubectl apply -f deployments/sistema-noticias-deployment.yaml
+helm install db-noticias -f helm/db-noticias/.env.yaml helm/db-noticias/
 ```
 
+
+## Desinstalar um componente
+
+Basta utilizar o comando uninstall do helm e o nome do componente. Por exemplo:
+
 ```bash
-kubectl apply -f stateful-sets/db-noticias-deployment.yaml
+helm uninstall sistema-noticias
 ```
